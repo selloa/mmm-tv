@@ -1,9 +1,9 @@
-# GitHub Pages: statische Site aus dem Repo-Root (index.html, app.js, styles.css, source/, …)
+# GitHub Pages: statische Site aus dem Repo-Root
 #
-# Einmalig im Repo unter Settings → Pages:
-#   Source: „GitHub Actions“ wählen (nicht „Deploy from a branch“).
-#
-# Ergebnis: z. B. https://<user>.github.io/<repo>/
+# Hintergrund: configure-pages kann mit "Get Pages site failed" (404) abbrechen,
+# wenn die Pages-Site API-seitig noch nicht angelegt ist oder noch "legacy" ist,
+# obwohl die UI bereits "GitHub Actions" zeigt. Deshalb: Site per REST anlegen/umstellen,
+# dann Artifact hochladen und deployen (ohne configure-pages).
 
 name: Deploy GitHub Pages
 
@@ -40,8 +40,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+      - name: Ensure Pages site (workflow build)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          API="${GITHUB_API_URL:-https://api.github.com}/repos/${GITHUB_REPOSITORY}/pages"
+          HDR=( -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" )
+          CODE="$(curl -sS -o /tmp/pages_body.json -w '%{http_code}' "${HDR[@]}" "$API")"
+          echo "GET ${API} -> ${CODE}"
+          if [ "${CODE}" = "404" ]; then
+            echo "No Pages site yet; creating (build_type=workflow)…"
+            BODY="$(jq -n --arg b "${{ github.ref_name }}" '{"build_type":"workflow","source":{"branch":$b,"path":"/"}}')"
+            curl -sS -f -X POST "${HDR[@]}" -d "${BODY}" "$API"
+            echo "Pages site created."
+          elif [ "${CODE}" = "200" ]; then
+            BT="$(jq -r '.build_type // empty' /tmp/pages_body.json)"
+            echo "Pages site exists (build_type=${BT})."
+            if [ "${BT}" = "legacy" ]; then
+              echo "Switching build_type to workflow…"
+              curl -sS -f -X PUT "${HDR[@]}" -d '{"build_type":"workflow"}' "$API"
+            fi
+          else
+            echo "Unexpected GET Pages response:"; cat /tmp/pages_body.json; exit 1
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
@@ -50,4 +72,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
