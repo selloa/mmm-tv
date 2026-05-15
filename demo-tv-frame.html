@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mmmTV — TV frame demo</title>
+    <link rel="stylesheet" href="demo-tv-frame.css" />
+  </head>
+  <body>
+    <div class="tv-demo" aria-label="TV frame prototype">
+      <div class="tv-demo__unit">
+        <div class="tv-demo__video" aria-hidden="true">
+          <div id="player"></div>
+        </div>
+        <img
+          class="tv-demo__frame"
+          src="TV%20Frame.png"
+          alt=""
+          width="320"
+          height="200"
+          decoding="async"
+        />
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="demo-tv-frame.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+  </body>
+</html>

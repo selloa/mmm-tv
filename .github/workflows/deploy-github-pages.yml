@@ -17,6 +17,10 @@ on:
       - "app.js"
       - "styles.css"
       - "vod_banner.png"
+      - "demo-tv-frame.html"
+      - "demo-tv-frame.css"
+      - "demo-tv-frame.js"
+      - "TV Frame.png"
       - "source/**"
       - ".github/workflows/deploy-github-pages.yml"
   workflow_dispatch:

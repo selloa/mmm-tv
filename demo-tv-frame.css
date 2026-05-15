@@ -1,0 +1,75 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.tv-demo {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #000;
+}
+
+/* Video + frame share one box (native frame is 320×200) */
+.tv-demo__unit {
+  --frame-w: 320;
+  --frame-h: 200;
+  /* Screen hole insets from TV Frame.png (transparent area) */
+  --screen-top: 3%;
+  --screen-bottom: 26%;
+  --screen-left: 11%;
+  --screen-right: 11%;
+  --screen-overscan: 1.06;
+  position: relative;
+  aspect-ratio: var(--frame-w) / var(--frame-h);
+  width: min(100vw, calc(100vh * var(--frame-w) / var(--frame-h)));
+  max-height: 100vh;
+}
+
+/* Video box matches the screen opening; overscan crops from the bottom first */
+.tv-demo__video {
+  position: absolute;
+  inset: var(--screen-top) var(--screen-right) var(--screen-bottom)
+    var(--screen-left);
+  z-index: 0;
+  overflow: hidden;
+}
+
+.tv-demo__video #player,
+.tv-demo__video iframe {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 177.78%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 56.25%;
+  transform: translateX(-50%) scale(var(--screen-overscan));
+  transform-origin: top center;
+  border: 0;
+  /* Block hover/tap UI inside the iframe (title, share, “Watch on YouTube”) */
+  pointer-events: none;
+}
+
+.tv-demo__frame {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
