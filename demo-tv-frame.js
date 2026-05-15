@@ -59,6 +59,29 @@
     event.target.playVideo();
   }
 
+  function isTypingTarget(el) {
+    if (!el || !el.tagName) return false;
+    var tag = el.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
+  }
+
+  /* YouTube embeds rarely get 0–9 keys unless the iframe is focused; handle on the page */
+  function onDocumentKeyDown(event) {
+    if (!player || !player.getDuration || !player.seekTo) return;
+    if (isTypingTarget(event.target)) return;
+
+    var key = event.key;
+    if (key < "0" || key > "9") return;
+
+    var duration = player.getDuration();
+    if (!duration || !isFinite(duration)) return;
+
+    var digit = parseInt(key, 10);
+    var fraction = digit === 0 ? 0 : digit / 10;
+    player.seekTo(duration * fraction, true);
+    event.preventDefault();
+  }
+
   function createOrLoadEpisode(ep) {
     if (!ep || !ytApiReady) return;
     var vid = extractVideoId(ep.youtube_longplay_url);
@@ -137,6 +160,7 @@
     }
 
     loadCatalog();
+    document.addEventListener("keydown", onDocumentKeyDown);
   }
 
   if (document.readyState === "loading") {
