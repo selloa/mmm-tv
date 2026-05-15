@@ -11,12 +11,6 @@
 
   var PLAYER_VARS = {
     autoplay: 1,
-    mute: 1,
-    controls: 0,
-    disablekb: 1,
-    fs: 0,
-    iv_load_policy: 3,
-    cc_load_policy: 0,
     rel: 0,
     modestbranding: 1,
     playsinline: 1,
@@ -59,26 +53,10 @@
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  function startPlayback(target) {
-    if (!target || !target.playVideo) return;
-    target.playVideo();
-  }
-
-  function tryUnmute(target) {
-    if (!target || !target.unMute) return;
-    target.unMute();
-    target.setVolume(100);
-  }
-
   function onPlayerReady(event) {
-    startPlayback(event.target);
-  }
-
-  function onPlayerStateChange(event) {
-    var YT = window.YT;
-    if (YT && event.data === YT.PlayerState.PLAYING) {
-      tryUnmute(event.target);
-    }
+    event.target.unMute();
+    event.target.setVolume(100);
+    event.target.playVideo();
   }
 
   function createOrLoadEpisode(ep) {
@@ -96,12 +74,13 @@
         playerVars: PLAYER_VARS,
         events: {
           onReady: onPlayerReady,
-          onStateChange: onPlayerStateChange,
         },
       });
     } else {
       player.loadVideoById({ videoId: vid, startSeconds: 0 });
-      startPlayback(player);
+      player.unMute();
+      player.setVolume(100);
+      player.playVideo();
     }
   }
 
@@ -158,14 +137,6 @@
     }
 
     loadCatalog();
-
-    var root = document.querySelector(".tv-demo");
-    if (root) {
-      root.addEventListener("click", function () {
-        tryUnmute(player);
-        startPlayback(player);
-      });
-    }
   }
 
   if (document.readyState === "loading") {

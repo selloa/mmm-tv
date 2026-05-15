@@ -60,8 +60,6 @@ body {
   transform: translateX(-50%) scale(var(--screen-overscan));
   transform-origin: top center;
   border: 0;
-  /* Block hover/tap UI inside the iframe (title, share, “Watch on YouTube”) */
-  pointer-events: none;
 }
 
 .tv-demo__frame {
